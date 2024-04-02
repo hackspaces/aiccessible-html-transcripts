@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="{{ css_file_path }}">
+    <title>{{ title }}</title>
+</head>
+<body>
+<main>
+    <header><h1>{{ title }}</h1></header>
+    <div>{% for paragraph in paragraphs %}<p>{{ paragraph }}</p>{% endfor %}</div>
+</main>
+<footer>
+    <hr>
+    <img src="https://assets.ea.asu.edu/ulc/images/asu_header%20logo%20small%20200%20px.png" alt="ASU logo">
+    <br>
+    <p>This page was created by Universal Learner Courses. Visit <a href="https://ea.asu.edu/">ASU Universal Learner courses</a> to learn more.</p>
+</footer>
+</body>
+</html>
