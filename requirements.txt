@@ -1,0 +1,8 @@
+openai
+moviepy
+pydub
+pytube
+haslib
+jinja2
+tempfile
+streamlit
