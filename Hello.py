@@ -7,7 +7,7 @@ from pytube import YouTube
 import os 
 
 file_name = ''
-
+testing_username = st.secrets['username_test']
 def create_download_link(file_name):
     with open(file_name, "r") as file:
         file = file.read()
@@ -27,7 +27,7 @@ def set_page_configuration():
 
 def login_user(username, password):
     # This is a placeholder for actual authentication logic
-    return username == "test" and password == "test"
+    return username == testing_username and password == "test"
 
 def main():
     set_page_configuration()
