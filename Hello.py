@@ -115,24 +115,35 @@ def main():
                     #save html file in user transcript folder
                     with open(f"{file_path}/{title}.html", "w") as file:
                         file.write(youtube_html)
+                        
+                with st.container():
+                    with st.chat_message(name="assistant", avatar="📁"):
+                        col1, col2 = st.columns([3, 1])
+                        with col1:
+                            st.write(f"Transcript: {title}")
+                        with col2:
+                            create_download_link(f"{file_path}/{title}.html") 
               
         if submit_button:
             if uploaded_files is not None:
                 for uploaded_file in uploaded_files:
-                    st.write(f"Processing file...{uploaded_file.name}")
-                    raw_text_avfile = file_upload_handler(uploaded_file)
-                    title = uploaded_file.name
-                    st.write(f"Raw Transcript for {title} from Whisper is recieved.")
-                    if transcribe_button is True:
-                        clean_avfile_html = create_html_transcript_direclty_gpt4(raw_text_avfile, gpt4_switch)
-                    else:
-                        clean_avfile_html = create_html_transcript(title, raw_text_avfile, gpt4_switch)
-                    st.write("File Processed")
-                    #create file path for user transcript folder
-                    file_path = os.path.join(username, "Transcripts")
-                    #save html file in user transcript folder
-                    with open(f"{file_path}/{title}.html", "w") as file:
-                        file.write(clean_avfile_html)
+                    with st.status("Processing File...", expanded=True) as status:
+                        status.write("Starting File Processing...")
+                        st.write(f"Processing file...{uploaded_file.name}")
+                        raw_text_avfile = file_upload_handler(uploaded_file)
+                        title = uploaded_file.name
+                        st.write(f"Raw Transcript for {title} from Whisper is recieved.")
+                        if transcribe_button is True:
+                            clean_avfile_html = create_html_transcript_direclty_gpt4(raw_text_avfile, gpt4_switch)
+                        else:
+                            clean_avfile_html = create_html_transcript(title, raw_text_avfile, gpt4_switch)
+                        st.write("File Processed")
+                        #create file path for user transcript folder
+                        file_path = os.path.join(username, "Transcripts")
+                        #save html file in user transcript folder
+                        with open(f"{file_path}/{title}.html", "w") as file:
+                            file.write(clean_avfile_html)
+                        st.write(f"HTML file for {title} is created.")
                     
                     with st.container():
                         with st.chat_message(name="assistant", avatar="📁"):
