@@ -4,3 +4,4 @@ pydub
 pytube
 jinja2
 streamlit
+BeautifulSoup4
