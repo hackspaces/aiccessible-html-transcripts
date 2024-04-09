@@ -18,9 +18,9 @@ def call_to_whisper(audiofile):
     except Exception as e:
         return f"An error occurred: {e}"
     
-def call_to_gpt4(prompt, raw_transcription):
+""" def call_to_gpt4(prompt, raw_transcription):
     try:
-        print("Calling GPT-4 for Cleanup")
+        print("Calling GPT-4 for Completion")
         response = client.chat.completions.create(
             model="gpt-4-0125-preview",
             messages=[
@@ -30,7 +30,7 @@ def call_to_gpt4(prompt, raw_transcription):
         )
         return response.choices[0].message.content
     except Exception as e:
-        return f"An error occurred: {e}"
+        return f"An error occurred: {e}" """
     
 def call_to_gpt4_cleaner(raw_transcription):
     try:
@@ -49,7 +49,7 @@ def call_to_gpt4_cleaner(raw_transcription):
     
 def call_to_gpt4_as_htmlcreator(raw_transcription):
     try:
-        print("Calling GPT-4 for Cleanup")
+        print("Calling GPT-3.5 for html creation")
         response = client.chat.completions.create(
         model="gpt-3.5-turbo-16k",
         messages=[

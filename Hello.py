@@ -117,6 +117,61 @@ def save_file_in_user_folder(file_path, file_name, file_content):
 def login_user(username, password):
     # This is a placeholder for actual authentication logic
     return username == testing_username and password == "test"
+
+def process_video(youtube_url=None, uploaded_file=None, transcribe_button=False, gpt4_switch=None, username=""):
+    """Process a video from YouTube URL or uploaded file and generate a clean HTML transcript."""
+    title = ''
+    clean_html = ''
+    raw_text = ''
+    status_label = ''
+
+    # Determine the source and process accordingly
+    if youtube_url:
+        print("Processing YouTube URL")
+        title, raw_text = process_youtube_url(youtube_url)
+        print("Title: ", title)
+    elif uploaded_file:
+        status_label = "File Received"
+        print("Processing Uploaded File")
+        title, raw_text = process_uploaded_file(uploaded_file)
+        print("Title: ", title)
+
+    # Handle raw text processing
+    if raw_text:
+        print(raw_text[:100])
+        print("Raw Text Received")
+        if transcribe_button:
+            print("Transcribe Button Pressed")
+            status_label = "Creating a Clean HTML File using AI -> GPT-4"
+            clean_html = create_html_transcript_direclty_gpt4(raw_text, gpt4_switch=transcribe_button)
+            print("Clean HTML Created")
+        else:
+            status_label = "Cleaning Raw Text using GPT-4"
+            clean_html = create_html_transcript(title, raw_text, gpt4_switch)
+
+        # Save the HTML file
+        print("Saving HTML File")
+        user_file_path = os.path.join(username, "Transcripts")
+        save_file_in_user_folder(user_file_path, title, clean_html)
+        print("HTML File Saved")
+        status_label = "File Processed"
+    else:
+        status_label = "No file uploaded or duplicate file"
+
+    return status_label, title
+
+def process_youtube_url(youtube_url):
+    """Process YouTube URL to get title and raw text."""
+    yt = YouTube(youtube_url)
+    title = yt.title
+    raw_text = youtube_video_handler(youtube_url)
+    return title, raw_text
+
+def process_uploaded_file(uploaded_file):
+    """Process uploaded file to get title and raw text."""
+    title = uploaded_file.name
+    raw_text = file_upload_handler(uploaded_file)
+    return title, raw_text
         
 if 'authenticated' not in st.session_state:
     st.session_state.authenticated = False
@@ -169,6 +224,8 @@ if st.session_state.authenticated:
     try:
         tab1, tab2 = st.tabs(["Transcribe", "Manage Files"])
         with tab1:
+            # ----------------------------- Main Page -----------------------------
+            # ----------------------------- Options -----------------------------
             with st.container():
                 st.write("<i>Additional options</i>", unsafe_allow_html=True)
                 #Main Page - Configration Options
@@ -207,58 +264,30 @@ if st.session_state.authenticated:
             youtube_url = st.chat_input("Paste Youtube Script Here")
             
             if submit_button or youtube_url:
-                title = ''
                 with st.status("Processing...", expanded=True) as status:
-                    if youtube_url is not None and youtube_url != "":
-                        st.write("Youtube URL Recieved")
-                        status.update(label="Youtube URL Recieved")
-                        yt = YouTube(youtube_url)
-                        title = yt.title
-                        raw_text = youtube_video_handler(youtube_url)
-
-                        if not raw_text:
-                            status.update(label='Duplicate File', state='error', expanded=False)
-                        status.write(f"Raw Text Recieved for {title}")    
-                        if transcribe_button is True:
-                            status.write(label="Creating a Clean HTML File using AI -> GPT-4")
-                            clean_html = create_html_transcript_direclty_gpt4(raw_text, gpt4_switch)
-                            clean_html = replace_speaker_name(clean_html, speaker_nam=None)
-                            status.update(label="File Processed", state="complete", expanded=False)
-                        else:
-                            st.write("Cleaning Raw Text using GPT-4")
-                            clean_html = create_html_transcript(title, raw_text, gpt4_switch, speaker_name=None)
-                            status.update(label="File Processed", state="complete", expanded=False)
-                        #create file path for user transcript folder
-                        user_file_path = os.path.join(username, "Transcripts")
-                        #save html file in user transcript folder
-                        save_file_in_user_folder(user_file_path, title, clean_html)
-                    else:
-                        status.update(label="No file uploaded", state="error", expanded=False) 
-                        
-                    if uploaded_files != []:
-                        print(uploaded_files)
-                        status.write("Files Recieved")
+                    processed_files_count = 0
+                    
+                    if youtube_url:
+                        status_label, title = process_video(youtube_url=youtube_url, transcribe_button=transcribe_button, 
+                                                            gpt4_switch=gpt4_switch, username=username)
+                        status.update(label=f"{status_label} for {title}")
+                    
+                    if uploaded_files:
                         for uploaded_file in uploaded_files:
-                            raw_text = file_upload_handler(uploaded_file)
-                            title = uploaded_file.name
-                            status.update(label=f"Raw Transcript for {title} from Whisper AI is recieved.")
-                            if not raw_text:
-                                status.update(label='Duplicate File', state='error', expanded=False)
-                                continue
-                            status.write(f"Raw Text Recieved for {title}")
-                            if transcribe_button is True:
-                                status.update(label="Creating a Clean HTML File using AI -> GPT-4")
-                                clean_html = create_html_transcript_direclty_gpt4(raw_text, gpt4_switch)
-                                clean_html = replace_speaker_name(clean_html, speaker_nam=None)
-                            else:
-                                status.update(label="Cleaning Raw Text using GPT-4")
-                                clean_html = create_html_transcript(title, raw_text, gpt4_switch, speaker_name=None)
-                            #create file path for user transcript folder
-                            user_file_path = os.path.join(username, "Transcripts")
-                            #save html file in user transcript folder
-                            save_file_in_user_folder(user_file_path, title, clean_html)
-                        status.update(label="File Processed", state="complete", expanded=False)
-                        
+                            status_label, title = process_video(uploaded_file=uploaded_file,
+                                                                transcribe_button=transcribe_button, 
+                                                                gpt4_switch=gpt4_switch, username=username)
+                            if "Processed" in status_label:
+                                processed_files_count += 1
+                            status.update(label=f"{status_label} for {title}")
+                            
+                    if processed_files_count == 0:
+                        status.update(label="No files processed.", state="error", expanded=False)
+                    else:
+                        status.update(label=f"All files processed.{processed_files_count} files", state="success", expanded=False)
+            else:
+                st.info("Upload a file or paste a YouTube URL to get started.")
+
             with st.container():
                 username = ''
                 if st.session_state.authenticated:
@@ -266,8 +295,6 @@ if st.session_state.authenticated:
                     output_file_paths = [{'title': i, 'path': f"{username}/Transcripts/{i}"} for i in os.listdir(f"{username}/Transcripts")]
                     #output_file_paths = [{'title': i, 'path': f"{username}/Transcripts/{i}"} for i in os.listdir(f"{username}/Transcripts")]
                     for file in output_file_paths:
-                        print(file)
-                        print(f"{username}/Transcripts/{file['title']}")
                         with st.chat_message(name="assistant", avatar="📁"):
                             #list files in user transcript folder
                             col1, col2= st.columns([8, 1])
@@ -287,7 +314,10 @@ if st.session_state.authenticated:
                                         os.remove(f"{file['path']}")
                                         st.session_state.output_file_paths = [{'title': i, 'path': f"{username}/Transcripts/{i}"} for i in os.listdir(f"{username}/Transcripts")]
                                         st.rerun()
+        # ----------------------------- Manage Files Tab -----------------------------
         with tab2:
+            file_data = ''
+            accessibility_score = ''
             try:
                 st.subheader("Manage Files", divider="blue")
                 file_selected = st.selectbox("Select a file to manage", options=[i['title'] for i in output_file_paths])
@@ -316,7 +346,7 @@ if st.session_state.authenticated:
                 new_content = st.text_area(value=file_data, label="File Content", height=800, key=None)
             except Exception as e:
                 e = str(e)
-                st.error(f"No files added yet")
+                st.error(f"No files added yet, {e}")
     except Exception as e:
-        st.error(f"Try Again")
+        st.error(f"Try Again {e}")
     

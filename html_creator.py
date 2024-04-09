@@ -11,14 +11,17 @@ def create_html_transcript_direclty_gpt4(transcript_text, gpt4_switch, speaker_n
     """
     transcript_text = transcript_text
     speaker_name_text = speaker_name_text
+    full_html = ""
     if gpt4_switch is True:
+        print("Calling GPT-4 for HTML creation")
         # Call the GPT-4 API to reformat the transcript
         clean_up_transcript =  call_to_gpt4_cleaner(transcript_text)
         full_html = call_to_gpt4_as_htmlcreator(clean_up_transcript)
+        print("GPT-4 HTML creation complete")
         
     return full_html
 
-def create_html_transcript(title, transcript_text, gpt4_switch, speaker_name):
+def create_html_transcript(title, transcript_text, gpt4_switch, speaker_name=None):
     """
     Creates an HTML transcript from the given transcript text.
 

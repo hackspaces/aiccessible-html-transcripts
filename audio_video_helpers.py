@@ -37,7 +37,7 @@ def split_large_avfile(file_path, temp_dir, max_size=24.5*1024*1024):  # max_siz
     while start < duration:
         end = min(start + part_duration, duration)
         part = audio[start:end]
-        part_file_path = os.path.join(temp_dir.name, f"part_{part_num}.mp3")
+        part_file_path = os.path.join(temp_dir, f"part_{part_num}.mp3")
         part.export(part_file_path, format="mp3")
         parts.append(part_file_path)
         start = end
