@@ -284,7 +284,7 @@ if st.session_state.authenticated:
                     if processed_files_count == 0:
                         status.update(label="No files processed.", state="error", expanded=False)
                     else:
-                        status.update(label=f"All files processed.{processed_files_count} files", state="success", expanded=False)
+                        status.update(label=f"All files processed.{processed_files_count} files", state="complete", expanded=False)
             else:
                 st.info("Upload a file or paste a YouTube URL to get started.")
 
